@@ -23,14 +23,9 @@ import os
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-import uuid
-import socket
-import paramiko
+from libcbr import mexecutor
+from libcbr import mzone
 
-from multiprocessing import Process, Queue
-
-from collections import OrderedDict
-from mechanize._html import Args
 
 __all__ = []
 __version__ = 0.1
@@ -41,184 +36,178 @@ DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
 
-
-
-
-
-
-class Zone(object):
-    def __init__(self,str_zone_list_entry_OR_zone_list_entry):
-        if isinstance(str_zone_list_entry_OR_zone_list_entry, basestring):
-            zone_list_entry=str_zone_list_entry_OR_zone_list_entry.split(':')
-        else:
-            zone_list_entry=str_zone_list_entry_OR_zone_list_entry
-        if len(zone_list_entry) == 7:
-            zone_list_entry=zone_list_entry+['','']
-        [self.zoneid \
-        ,self.zonename \
-        ,self.state \
-        ,self.zonepath \
-        ,self.uuid \
-        ,self.brand \
-        ,self.ip_type
-        ,self.r_or_w
-        ,self.file_mac_profile]=zone_list_entry[:9]
-        self.is_local=self.zonename != 'global'
-        self._lfs=None
-    @classmethod
-    def factory_lzone_from_stdout(cls, stdout):
-        dzone=OrderedDict()
-        for line in stdout:
-            zone=cls(line)
-            dzone[zone.zonename]=zone
-        return dzone
-    @staticmethod
-    def get_from_cmd_str():
-        return "zoneadm list -cp"
-    def to_list(self):
-        return [self.zoneid \
-        ,self.zonename \
-        ,self.state \
-        ,self.zonepath \
-        ,self.uuid \
-        ,self.brand \
-        ,self.ip_type
-        ,self.r_or_w
-        ,self.file_mac_profile]
-    def _get_rootpath(self):
-        if self.zonename=='global':
-            return self.zonepath
-        else:
-            return os.path.join(self.zonepath, 'root')
-    rootpath=property(_get_rootpath)
-    def _get_uniq_value(self):
-        """to comply with UniqList """
-        return self.zonename
-    uniq_value=property(_get_uniq_value)
-    def __str__(self):
-        return 'zone(%s)' % (self.zonename)
-    __repr__=__str__
-    def _get_is_running(self):
-        return 'running' == self.state
-    is_running=property(_get_is_running)
-    def _get_lrecipient(self):
-        raise NotImplemented()
-#     def cmp_by_name(self, a,b):
-#         return mix.cmpAlphaNum(a.zonename, b.zonename)
-#     cmp_by_name=classmethod(cmp_by_name)
-       
-        
-
-
-
-
-__all__ = []
-__version__ = 0.1
-__date__ = '2014-11-24'
-__updated__ = '2014-11-24'
-
-DEBUG = 1
-TESTRUN = 0
-PROFILE = 0
-
-class Host(str):
-    def __new__(cls, *args, **kw):
-        return str.__new__(cls,*args,**kw)
-    def __repr__(self):
-        return "Host(%s)" % self
-
-class Result(object):
-    def __init__(self, host, cmd, stdout, stderr, status):
-        if isinstance(host, Host):
-            self.host=host
-        else:
-            self.host=Host(host)
-        self.host=host
-        self.cmd=cmd
-        self.stdout=stdout
-        self.stderr=stderr
-        self.status=status
-        self._uuid=uuid.uuid1()
-    @property
-    def uuid(self):
-        return self._uuid
-
-class GroupHost(list):
-    def __init__(self, *args):
-        super(GroupHost,self).__init__(*args)
-    @classmethod
-    def create_from(cls,prefix=None):
-        lhost=[]
-        not_found=0
-        i=-1
-        while not_found < 20:
-            i+=1
-            hostname=prefix+str(i)
-            try:
-                socket.gethostbyname(hostname)
-            except:
-                not_found+=1
-                continue
-            lhost.append(Host(hostname))
-        group_host=GroupHost(lhost)
-        return group_host
-    def parallel_exec(self,cmd):
-        queue=Queue()        
-        lprocess=[]
-        for host in self:
-            lprocess.append(Process(target=self._qexec, args=(host, cmd, queue)))
-        for p in lprocess:
-            p.start()
-        for p in lprocess:
-            p.join()
-        # recolte data
-        lresult=[]
-        while queue.qsize():
-            lresult.append(queue.get())
-        return lresult
-    def serial_exec(self, cmd):
-        lresult=[]
-        for host in self:
-            lresult.append(self._exec(host,cmd))
-        return lresult
-    def _qexec(self, host, cmd, queue):
-        queue.put(self._exec(host, cmd))
-    def _exec(self, host, cmd):
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        client.connect(host, username="su")
-        unused_i,o,e=client.exec_command(cmd)
-        status=o.channel.recv_exit_status()
-#         o=o.readlines()
-#         e=e.readlines()
-        o=[line.rstrip() for line in o.readlines()]
-        e=[line.rstrip() for line in e.readlines()]
-        result=Result(host,cmd,o,e,status)
-        return result
-    
+#
+DEFAULT_LIST_PREFIX_ZONE="amazone dropzone calzone canzone twilightzone fanzone webz".split()
+DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 
     
-_cache_lglobalzone=None
-def get_list_globalzone():
-    global _cache_lglobalzone
-    if _cache_lglobalzone != None:
-        return _cache_lglobalzone
-    _cache_lglobalzone=GroupHost.create_from("dropzone")
-    return _cache_lglobalzone
-        
-def whereis(zonename):
-    lhost=[]
-    lg=get_list_globalzone()
-    for result in lg.parallel_exec("zoneadm list -cp"):
-        if result.status:
-            print "cmd(%s) on host(%s) failed" % (result.cmd, result.host)
-            continue
-        dzone=Zone.factory_lzone_from_stdout(result.stdout)
-        if zonename in dzone:
-            lhost.append(result.host)
-    return lhost
+
+# class Host(str):
+#     def __new__(cls, *args, **kw):
+#         return str.__new__(cls,*args,**kw)
+#     def __repr__(self):
+#         return "Host(%s)" % self
+# 
+# class Result(object):
+#     def __init__(self, host, cmd, stdout, stderr, status):
+#         if isinstance(host, Host):
+#             self.host=host
+#         else:
+#             self.host=Host(host)
+#         self.host=host
+#         self.cmd=cmd
+#         self.stdout=stdout
+#         self.stderr=stderr
+#         self.status=status
+#         self._uuid=uuid.uuid1()
+#     @property
+#     def uuid(self):
+#         return self._uuid
+# 
+# class GroupHost(list):
+#     def __init__(self, *lhost):
+#         ltmphost=[]
+#         for host in lhost:
+#             if not isinstance(host, Host):
+#                 ltmphost.append(Host(host))
+#             else:
+#                 ltmphost.append(host)
+#         super(GroupHost,self).__init__(*ltmphost)
+#     @classmethod
+#     def create_from(cls,prefix=None):
+#         lhost=[]
+#         not_found=0
+#         i=-1
+#         while not_found < 20:
+#             i+=1
+#             hostname=prefix+str(i)
+#             try:
+#                 socket.gethostbyname(hostname)
+#             except:
+#                 not_found+=1
+#                 continue
+#             lhost.append(Host(hostname))
+#         group_host=GroupHost(lhost)
+#         return group_host
+#     def parallel_exec(self,cmd, prefix=None):
+#         if prefix:
+#             if prefix not in DEFAULT_LIST_PREFIX_ZONE:
+#                 raise Exception("prefix(%s) should be in %s" % (prefix, repr(DEFAULT_LIST_PREFIX_ZONE)))
+#             
+#         queue=Queue()        
+#         lprocess=[]
+#         for host in self:
+#             lprocess.append(Process(target=self._qexec, args=(host, cmd, queue)))
+#         for p in lprocess:
+#             p.start()
+#         for p in lprocess:
+#             p.join()
+#         # recolte data
+#         lresult=[]
+#         while queue.qsize():
+#             lresult.append(queue.get())
+#         return lresult
+#     def serial_exec(self, cmd):
+#         lresult=[]
+#         for host in self:
+#             lresult.append(self._exec(host,cmd))
+#         return lresult
+#     def _qexec(self, host, cmd, queue):
+#         queue.put(self._exec(host, cmd))
+#     def _exec(self, host, cmd):
+#         client = paramiko.SSHClient()
+#         client.load_system_host_keys()
+#         client.connect(host, username="su")
+#         unused_i,o,e=client.exec_command(cmd)
+#         status=o.channel.recv_exit_status()
+# #         o=o.readlines()
+# #         e=e.readlines()
+#         o=[line.rstrip() for line in o.readlines()]
+#         e=[line.rstrip() for line in e.readlines()]
+#         result=Result(host,cmd,o,e,status)
+#         return result
+# 
+# 
+# _cache_lglobalzone=None
+# def get_list_globalzone(refresh=False):
+#     global _cache_lglobalzone
+#     pickle_file=os.path.expanduser("~/.cache/ch.unige.ugzone")
+#     # 
+#     lhost=[]
+#     # force it
+#     if refresh:
+#         for prefix in DEFAULT_LIST_PREFIX_ZONE:
+#             lhost+=GroupHost.create_from(prefix)
+#         pickle.dump(lhost,open(pickle_file,"w"))
+#         _cache_lglobalzone=lhost
+#         return _cache_lglobalzone
+#     # check the cache
+#     if None != _cache_lglobalzone :
+#         return _cache_lglobalzone
+#     # check the pickle
+#     try:
+#         lhost=pickle.load(open(pickle_file))
+#         _cache_lglobalzone=lhost
+#         return _cache_lglobalzone
+#     except:
+#         pass
+#     # do it
+#     for prefix in DEFAULT_LIST_PREFIX_ZONE:
+#         lhost+=GroupHost.create_from(prefix)
+#     pickle.dump(lhost,open(pickle_file,"w"))
+#     _cache_lglobalzone=lhost
+#     return _cache_lglobalzone
+
+    
+def where_are(lzonename):
+    lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(DEFAULT_LIST_PREFIX_ZONE)
+    lresp=lexe.run_parallel(mzone.cmdlistzone)
+    lzone=[]
+    for resp in lresp:
+        lzone+=resp.output
+    lret=[]
+    for zone in lzone:
+        for zonename in lzonename:
+            if zonename==zone.zonename:
+                host=mexecutor.Related.get_result_for_object(zone).host
+                lret.append((host, zonename))
+    return lret
+
+def list_global_local_host(lprefix=DEFAULT_LIST_PREFIX_ZONE):
+    lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefix)
+    lresp=lexe.run_parallel(mzone.cmdlistzone)
+    lzone=[]
+    for resp in lresp:
+        lzone+=resp.output
+    return [(zone, mexecutor.Related.get_result_for_object(zone).host) for zone in lzone if zone.is_local]
+
+
+
+# 
+#     lg=DEFAULT_LIST_PREFIX_ZONget_list_globalzone()
+#     lg=
+#     for result in lg.parallel_exec("zoneadm list -cp"):
+#         if result.status:
+#             print "cmd(%s) on host(%s) failed" % (result.cmd, result.host)
+#             continue
+#         dzone=Zone.factory_lzone_from_stdout(result.stdout)
+#         if zonename in dzone:
+#             lhost.append(result.host)
+#     return lhost
+
+def execute_shell(cmd, lhostname, lprefixhostname):
+    lexe=mexecutor.ListExecutor()
+    if None != lprefixhostname:
+        lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefixhostname)
+    for hostname in lhostname:
+        lexe.append(mexecutor.FactoryExecutor.gen_for_hostname(hostname))
+    return lexe.run_parallel(mexecutor.Cmd(cmd))
 
 def check(*args, **kw):
+    # zfs upgrade
+    # zpool upgrade
+    # beadm one value
+    # no file under a zfs mount
     pass
 
 
@@ -271,25 +260,49 @@ USAGE
         subparsers = parser.add_subparsers(dest="sub", help='sub-command help')
     
         # whereis zonename
-        parser_whereis = subparsers.add_parser('whereis', help='on which globalzone is a zone')
-        parser_whereis.add_argument("zonename", type=str, help="which zonename to search")
-        parser_whereis.set_defaults(func=whereis)
+        parser_whereis = subparsers.add_parser('where-are', help='on which globalzone is a zone')
+        parser_whereis.add_argument("zonenames", type=str, help="which zonenames to search (eg: zone1,zone2)")
+        parser_whereis.set_defaults(func=where_are)
+        # list global local zone
+        parser_whereis = subparsers.add_parser('list-global-local-host', help='list global zonename zonename-host')
+        parser_whereis.add_argument("prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_whereis.set_defaults(func=list_global_local_host)
+        # execute
+        parser_whereis = subparsers.add_parser('execute-shell', help='execute a shell command')
+        parser_whereis.add_argument("--prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_whereis.add_argument("--hosts", type=str, help="on which hosts (eg:zone1,zone2)")
+        parser_whereis.add_argument("cmd", type=str, help="commande to invoke (eg: 'ls -l')")        
+        parser_whereis.set_defaults(func=execute_shell)
         # checks zonename
         parser_whereis = subparsers.add_parser('check', help='do some checks on the zone')
-        parser_whereis.add_argument("zonename", type=str, help="which zonename to search")
+        parser_whereis.add_argument("--zonenames", type=str, help="on wich zonename(eg: zone1,zone2)")
+        parser_whereis.add_argument("--prefixes", type=str, help="on which prefixes(eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
         parser_whereis.set_defaults(func=check)
         # ugzone moves --// zone,zone,zone globalzone zone globalzone zone,zone,zone globalzone
     
         # Process arguments
         args = parser.parse_args()
-        if "whereis" == args.sub:
-            lhost=args.func(args.zonename)
-            for host in lhost:
-                print host
+        if "where-are" == args.sub:
+            lmaphostzonename=args.func(args.zonenames.split(","))
+            for host, zonename in lmaphostzonename:
+                print (host, zonename)
+        elif "list-global-local-host" == args.sub:
+            lmapzone_host=args.func(args.prefixes.split(","))
+            for zone, host in lmapzone_host:
+                print (host, zone.zonename)
+        elif "execute-shell"  == args.sub:
+            lhostname= [] if None==args.hosts else args.hosts.split(",")
+            lprefixhostname= [] if None==args.prefixes else args.prefixes.split(",")
+            lresp=args.func(args.cmd, lhostname=lhostname, lprefixhostname=lprefixhostname)
+            for resp in lresp:
+                print (resp.host)
+                print (os.linesep.join(resp.stdout))
+        elif "check" == args.sub:
+            args.func(args.zonenames.split(","))
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
-    except Exception, e:
+    except Exception as e:
         if DEBUG or TESTRUN:
             raise(e)
         
