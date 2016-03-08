@@ -1,0 +1,325 @@
+Fri Feb 20 09:26:45 2015    ugzone_profile.txt
+
+         138680 function calls (138637 primitive calls) in 20.005 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   20.005   20.005 <string>:1(<module>)
+        1    0.000    0.000   20.005   20.005 ugzone.py:272(main)
+        1    0.000    0.000   20.002   20.002 ugzone.py:233(get_lmap_hostingname_zone_hosted)
+        2    0.001    0.001   20.001   10.000 mexecutor.py:92(create)
+      982    0.001    0.000   19.957    0.020 forking.py:131(poll)
+      982   19.956    0.020   19.956    0.020 {posix.waitpid}
+       51    0.000    0.000   19.956    0.391 process.py:139(join)
+       51    0.000    0.000   19.956    0.391 forking.py:152(wait)
+        1    0.000    0.000    3.337    3.337 mexecutor.py:80(create_from_lexe)
+       51    0.004    0.000    0.021    0.000 process.py:116(start)
+      447    0.000    0.000    0.019    0.000 mexecutor.py:39(add_issuer_issuing)
+      447    0.014    0.000    0.018    0.000 mexecutor.py:44(get)
+       51    0.002    0.000    0.015    0.000 forking.py:116(__init__)
+       51    0.013    0.000    0.013    0.000 {posix.fork}
+   126964    0.004    0.000    0.004    0.000 {id}
+       51    0.001    0.000    0.003    0.000 process.py:76(_cleanup)
+        6    0.000    0.000    0.002    0.000 argparse.py:1556(__init__)
+       51    0.000    0.000    0.002    0.000 queues.py:113(get)
+       51    0.001    0.000    0.001    0.000 {method 'recv' of '_multiprocessing.Connection' objects}
+        5    0.000    0.000    0.001    0.000 argparse.py:1054(add_parser)
+        2    0.000    0.000    0.001    0.001 __init__.py:213(Queue)
+       18    0.000    0.000    0.001    0.000 gettext.py:565(gettext)
+       18    0.000    0.000    0.001    0.000 gettext.py:527(dgettext)
+       18    0.000    0.000    0.001    0.000 gettext.py:461(translation)
+       18    0.000    0.000    0.001    0.000 gettext.py:421(find)
+       51    0.000    0.000    0.001    0.000 re.py:226(_compile)
+       14    0.000    0.000    0.001    0.000 argparse.py:1263(add_argument)
+        6    0.000    0.000    0.001    0.000 sre_compile.py:493(compile)
+        1    0.000    0.000    0.001    0.001 mexecutor.py:176(gen_list_from_lprefixhost)
+       51    0.000    0.000    0.001    0.000 mexecutor.py:317(__init__)
+        1    0.000    0.000    0.001    0.001 mhost.py:46(gen_from_prefix)
+       49    0.000    0.000    0.001    0.000 re.py:188(compile)
+        1    0.000    0.000    0.001    0.001 queues.py:35(<module>)
+        1    0.000    0.000    0.000    0.000 mhost.py:85(_load_cache)
+       18    0.000    0.000    0.000    0.000 argparse.py:1182(__init__)
+        1    0.000    0.000    0.000    0.000 argparse.py:1700(parse_args)
+      2/1    0.000    0.000    0.000    0.000 argparse.py:1707(parse_known_args)
+      2/1    0.000    0.000    0.000    0.000 argparse.py:1742(_parse_known_args)
+      3/2    0.000    0.000    0.000    0.000 argparse.py:1887(consume_positionals)
+        2    0.000    0.000    0.000    0.000 queues.py:58(__init__)
+        1    0.000    0.000    0.000    0.000 pickle.py:1377(load)
+        1    0.000    0.000    0.000    0.000 pickle.py:845(load)
+       15    0.000    0.000    0.000    0.000 argparse.py:2326(_get_formatter)
+       36    0.000    0.000    0.000    0.000 gettext.py:130(_expand_lang)
+        6    0.000    0.000    0.000    0.000 sre_compile.py:478(_code)
+       43    0.000    0.000    0.000    0.000 cmd_zone_hostname.py:25(_factory)
+       15    0.000    0.000    0.000    0.000 argparse.py:154(__init__)
+        2    0.000    0.000    0.000    0.000 re.py:134(match)
+        6    0.000    0.000    0.000    0.000 sre_parse.py:686(parse)
+        1    0.000    0.000    0.000    0.000 synchronize.py:36(<module>)
+        8    0.000    0.000    0.000    0.000 __init__.py:1176(error)
+      8/6    0.000    0.000    0.000    0.000 sre_parse.py:310(_parse_sub)
+      2/1    0.000    0.000    0.000    0.000 argparse.py:1789(take_action)
+        8    0.000    0.000    0.000    0.000 __init__.py:1260(_log)
+        1    0.000    0.000    0.000    0.000 argparse.py:1073(__call__)
+      9/7    0.000    0.000    0.000    0.000 sre_parse.py:388(_parse)
+       12    0.000    0.000    0.000    0.000 argparse.py:1310(add_argument_group)
+        6    0.000    0.000    0.000    0.000 sre_compile.py:359(_compile_info)
+       36    0.000    0.000    0.000    0.000 locale.py:363(normalize)
+       12    0.000    0.000    0.000    0.000 argparse.py:1486(__init__)
+        1    0.000    0.000    0.000    0.000 argparse.py:1810(consume_optional)
+        8    0.000    0.000    0.000    0.000 cmd_listzone.py:26(_factory)
+     18/6    0.000    0.000    0.000    0.000 sre_compile.py:32(_compile)
+        2    0.000    0.000    0.000    0.000 __init__.py:102(Pipe)
+        6    0.000    0.000    0.000    0.000 synchronize.py:74(__init__)
+       20    0.000    0.000    0.000    0.000 pickle.py:961(load_string)
+       72    0.000    0.000    0.000    0.000 genericpath.py:15(exists)
+        3    0.000    0.000    0.000    0.000 argparse.py:2039(_match_arguments_partial)
+        1    0.000    0.000    0.000    0.000 argparse.py:2020(_match_argument)
+        8    0.000    0.000    0.000    0.000 __init__.py:1247(makeRecord)
+       43    0.000    0.000    0.000    0.000 cmd_listzone.py:37(from_zoneadm_list_entry)
+        8    0.000    0.000    0.000    0.000 __init__.py:243(__init__)
+       72    0.000    0.000    0.000    0.000 posixpath.py:68(join)
+        4    0.000    0.000    0.000    0.000 synchronize.py:146(__init__)
+      185    0.000    0.000    0.000    0.000 {isinstance}
+       70    0.000    0.000    0.000    0.000 sre_parse.py:139(__getitem__)
+       20    0.000    0.000    0.000    0.000 {method 'decode' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 __init__.py:71(search_function)
+       72    0.000    0.000    0.000    0.000 {posix.stat}
+       33    0.000    0.000    0.000    0.000 UserDict.py:18(__getitem__)
+      102    0.000    0.000    0.000    0.000 {method 'flush' of 'file' objects}
+      204    0.000    0.000    0.000    0.000 argparse.py:1234(register)
+       51    0.000    0.000    0.000    0.000 process.py:94(__init__)
+        5    0.000    0.000    0.000    0.000 {__import__}
+       16    0.000    0.000    0.000    0.000 mexecutor.py:144(_url_or_str_2_url)
+       55    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+        1    0.000    0.000    0.000    0.000 argparse.py:1649(add_subparsers)
+       18    0.000    0.000    0.000    0.000 locale.py:347(_replace_encoding)
+     1111    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+        8    0.000    0.000    0.000    0.000 urlparse.py:137(urlparse)
+       14    0.000    0.000    0.000    0.000 argparse.py:1680(_add_action)
+       51    0.000    0.000    0.000    0.000 urlparse.py:133(geturl)
+       43    0.000    0.000    0.000    0.000 cmd_zone_hostname.py:22(__init__)
+        1    0.000    0.000    0.000    0.000 connection.py:35(<module>)
+        1    0.000    0.000    0.000    0.000 synchronize.py:72(SemLock)
+       15    0.000    0.000    0.000    0.000 argparse.py:1508(_add_action)
+        1    0.000    0.000    0.000    0.000 {method 'sort' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 forking.py:35(<module>)
+        6    0.000    0.000    0.000    0.000 sre_compile.py:178(_compile_charset)
+        8    0.000    0.000    0.000    0.000 urlparse.py:168(urlsplit)
+       53    0.000    0.000    0.000    0.000 queues.py:141(qsize)
+       14    0.000    0.000    0.000    0.000 argparse.py:573(_format_args)
+       72    0.000    0.000    0.000    0.000 UserDict.py:58(get)
+      175    0.000    0.000    0.000    0.000 {built-in method __new__ of type object at 0x933200}
+       16    0.000    0.000    0.000    0.000 ugzone.py:239(<lambda>)
+       59    0.000    0.000    0.000    0.000 <string>:8(__new__)
+      271    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+       43    0.000    0.000    0.000    0.000 cmd_listzone.py:48(__init__)
+    26/14    0.000    0.000    0.000    0.000 sre_parse.py:149(getwidth)
+       55    0.000    0.000    0.000    0.000 sre_parse.py:210(get)
+       11    0.000    0.000    0.000    0.000 argparse.py:1400(_get_optional_kwargs)
+       15    0.000    0.000    0.000    0.000 argparse.py:1320(_add_action)
+       43    0.000    0.000    0.000    0.000 cmd_zone_hostname.py:20(__new__)
+        6    0.000    0.000    0.000    0.000 sre_compile.py:207(_optimize_charset)
+        8    0.000    0.000    0.000    0.000 util.py:161(register_after_fork)
+       51    0.000    0.000    0.000    0.000 urlparse.py:223(urlunparse)
+       19    0.000    0.000    0.000    0.000 __init__.py:49(normalize_encoding)
+        2    0.000    0.000    0.000    0.000 queues.py:86(_after_fork)
+       64    0.000    0.000    0.000    0.000 sre_parse.py:191(__next)
+      106    0.000    0.000    0.000    0.000 {hasattr}
+  429/418    0.000    0.000    0.000    0.000 {len}
+        1    0.000    0.000    0.000    0.000 string_escape.py:7(<module>)
+      135    0.000    0.000    0.000    0.000 {method 'split' of 'str' objects}
+        8    0.000    0.000    0.000    0.000 __init__.py:1281(handle)
+        1    0.000    0.000    0.000    0.000 Queue.py:1(<module>)
+        1    0.000    0.000    0.000    0.000 {open}
+        8    0.000    0.000    0.000    0.000 __init__.py:1226(findCaller)
+       43    0.000    0.000    0.000    0.000 {method 'split' of 'unicode' objects}
+       32    0.000    0.000    0.000    0.000 urlparse.py:95(hostname)
+       57    0.000    0.000    0.000    0.000 pickle.py:1150(load_get)
+        2    0.000    0.000    0.000    0.000 synchronize.py:129(__init__)
+      227    0.000    0.000    0.000    0.000 {method 'read' of 'file' objects}
+      258    0.000    0.000    0.000    0.000 {method 'startswith' of 'str' objects}
+       15    0.000    0.000    0.000    0.000 argparse.py:1435(_pop_action_class)
+       64    0.000    0.000    0.000    0.000 pickle.py:1164(load_put)
+       35    0.000    0.000    0.000    0.000 cmd_zone_hostname.py:35(__new__)
+      163    0.000    0.000    0.000    0.000 {posix.getpid}
+        1    0.000    0.000    0.000    0.000 argparse.py:1033(__init__)
+       20    0.000    0.000    0.000    0.000 pickle.py:1129(load_reduce)
+       43    0.000    0.000    0.000    0.000 mexecutor.py:229(hostname)
+       20    0.000    0.000    0.000    0.000 argparse.py:765(__init__)
+        8    0.000    0.000    0.000    0.000 weakref.py:98(__setitem__)
+        8    0.000    0.000    0.000    0.000 mexecutor.py:154(gen_from_url)
+       51    0.000    0.000    0.000    0.000 {method 'discard' of 'set' objects}
+        8    0.000    0.000    0.000    0.000 argparse.py:807(__init__)
+        2    0.000    0.000    0.000    0.000 threading.py:242(Condition)
+        1    0.000    0.000    0.000    0.000 sre_compile.py:258(_mk_bitmap)
+       20    0.000    0.000    0.000    0.000 pickle.py:993(load_tuple)
+       14    0.000    0.000    0.000    0.000 argparse.py:566(format)
+        8    0.000    0.000    0.000    0.000 __init__.py:1313(callHandlers)
+       51    0.000    0.000    0.000    0.000 mexecutor.py:309(__init__)
+      241    0.000    0.000    0.000    0.000 {method 'setdefault' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 threading.py:260(__init__)
+        8    0.000    0.000    0.000    0.000 posixpath.py:104(splitext)
+        1    0.000    0.000    0.000    0.000 collections.py:38(__init__)
+       51    0.000    0.000    0.000    0.000 {method 'acquire' of '_multiprocessing.SemLock' objects}
+       31    0.000    0.000    0.000    0.000 argparse.py:95(_callable)
+       20    0.000    0.000    0.000    0.000 {method 'match' of '_sre.SRE_Pattern' objects}
+       51    0.000    0.000    0.000    0.000 urlparse.py:233(urlunsplit)
+        2    0.000    0.000    0.000    0.000 connection.py:183(Pipe)
+       18    0.000    0.000    0.000    0.000 argparse.py:1439(_get_handler)
+        2    0.000    0.000    0.000    0.000 argparse.py:2200(_get_values)
+      102    0.000    0.000    0.000    0.000 {issubclass}
+      147    0.000    0.000    0.000    0.000 {method 'readline' of 'file' objects}
+        3    0.000    0.000    0.000    0.000 argparse.py:1384(_get_positional_kwargs)
+       32    0.000    0.000    0.000    0.000 argparse.py:1238(_registry_get)
+      236    0.000    0.000    0.000    0.000 {method 'endswith' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 argparse.py:280(format_help)
+        8    0.000    0.000    0.000    0.000 __init__.py:1353(isEnabledFor)
+       22    0.000    0.000    0.000    0.000 {getattr}
+       20    0.000    0.000    0.000    0.000 copy_reg.py:46(_reconstructor)
+       10    0.000    0.000    0.000    0.000 posixpath.py:119(basename)
+      140    0.000    0.000    0.000    0.000 {method 'find' of 'str' objects}
+        8    0.000    0.000    0.000    0.000 genericpath.py:85(_splitext)
+       51    0.000    0.000    0.000    0.000 {posix.WEXITSTATUS}
+       46    0.000    0.000    0.000    0.000 {range}
+       42    0.000    0.000    0.000    0.000 sre_parse.py:135(__len__)
+        6    0.000    0.000    0.000    0.000 argparse.py:983(__init__)
+        1    0.000    0.000    0.000    0.000 string_escape.py:29(getregentry)
+        8    0.000    0.000    0.000    0.000 weakref.py:48(remove)
+        6    0.000    0.000    0.000    0.000 sre_parse.py:187(__init__)
+        3    0.000    0.000    0.000    0.000 pickle.py:1087(load_global)
+        8    0.000    0.000    0.000    0.000 sre_compile.py:354(_simple)
+       12    0.000    0.000    0.000    0.000 sre_compile.py:472(isstring)
+       13    0.000    0.000    0.000    0.000 collections.py:54(__setitem__)
+       53    0.000    0.000    0.000    0.000 {method '_get_value' of '_multiprocessing.SemLock' objects}
+       50    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+      102    0.000    0.000    0.000    0.000 {method 'release' of '_multiprocessing.SemLock' objects}
+       55    0.000    0.000    0.000    0.000 {min}
+        1    0.000    0.000    0.000    0.000 {method 'write' of 'file' objects}
+        9    0.000    0.000    0.000    0.000 sre_parse.py:266(_escape)
+        8    0.000    0.000    0.000    0.000 urlparse.py:160(_splitnetloc)
+        2    0.000    0.000    0.000    0.000 {posix.pipe}
+        5    0.000    0.000    0.000    0.000 argparse.py:1029(__init__)
+       15    0.000    0.000    0.000    0.000 argparse.py:1448(_check_conflict)
+        1    0.000    0.000    0.000    0.000 _abcoll.py:545(update)
+       20    0.000    0.000    0.000    0.000 pickle.py:1178(load_append)
+        8    0.000    0.000    0.000    0.000 __init__.py:154(getLevelName)
+        3    0.000    0.000    0.000    0.000 argparse.py:2252(_get_value)
+        1    0.000    0.000    0.000    0.000 codecs.py:77(__new__)
+        3    0.000    0.000    0.000    0.000 argparse.py:2055(_parse_optional)
+        1    0.000    0.000    0.000    0.000 argparse.py:205(format_help)
+        6    0.000    0.000    0.000    0.000 {_sre.compile}
+       72    0.000    0.000    0.000    0.000 UserDict.py:70(__contains__)
+       21    0.000    0.000    0.000    0.000 pickle.py:870(marker)
+       34    0.000    0.000    0.000    0.000 sre_parse.py:147(append)
+        8    0.000    0.000    0.000    0.000 __init__.py:82(<lambda>)
+        8    0.000    0.000    0.000    0.000 weakref.py:267(__init__)
+       51    0.000    0.000    0.000    0.000 {posix.WIFSIGNALED}
+        8    0.000    0.000    0.000    0.000 weakref.py:262(__new__)
+        8    0.000    0.000    0.000    0.000 __init__.py:1339(getEffectiveLevel)
+        1    0.000    0.000    0.000    0.000 cmd_listzone.py:23(__init__)
+        8    0.000    0.000    0.000    0.000 threading.py:1152(currentThread)
+       14    0.000    0.000    0.000    0.000 argparse.py:557(_metavar_formatter)
+        3    0.000    0.000    0.000    0.000 pickle.py:1122(find_class)
+       26    0.000    0.000    0.000    0.000 {method 'rfind' of 'str' objects}
+       20    0.000    0.000    0.000    0.000 {method 'search' of '_sre.SRE_Pattern' objects}
+       19    0.000    0.000    0.000    0.000 {max}
+       41    0.000    0.000    0.000    0.000 {method 'pop' of 'list' objects}
+       14    0.000    0.000    0.000    0.000 six.py:175(find_module)
+       18    0.000    0.000    0.000    0.000 sre_parse.py:90(__init__)
+       18    0.000    0.000    0.000    0.000 {method 'index' of 'str' objects}
+        5    0.000    0.000    0.000    0.000 argparse.py:1244(set_defaults)
+       55    0.000    0.000    0.000    0.000 {method 'translate' of 'str' objects}
+       21    0.000    0.000    0.000    0.000 pickle.py:1250(load_mark)
+       27    0.000    0.000    0.000    0.000 sre_parse.py:204(match)
+       30    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 abc.py:128(__instancecheck__)
+       16    0.000    0.000    0.000    0.000 {thread.get_ident}
+        1    0.000    0.000    0.000    0.000 forking.py:60(ForkingPickler)
+       51    0.000    0.000    0.000    0.000 {posix.WIFEXITED}
+       35    0.000    0.000    0.000    0.000 {method 'rstrip' of 'unicode' objects}
+        1    0.000    0.000    0.000    0.000 abc.py:148(__subclasscheck__)
+        3    0.000    0.000    0.000    0.000 _weakrefset.py:70(__contains__)
+        8    0.000    0.000    0.000    0.000 __init__.py:605(filter)
+       15    0.000    0.000    0.000    0.000 argparse.py:199(__init__)
+        8    0.000    0.000    0.000    0.000 {method 'extend' of 'list' objects}
+        8    0.000    0.000    0.000    0.000 threading.py:967(name)
+        8    0.000    0.000    0.000    0.000 {any}
+        1    0.000    0.000    0.000    0.000 argparse.py:250(add_usage)
+       11    0.000    0.000    0.000    0.000 {method 'lstrip' of 'str' objects}
+        6    0.000    0.000    0.000    0.000 sre_parse.py:67(__init__)
+        1    0.000    0.000    0.000    0.000 argparse.py:836(__call__)
+        1    0.000    0.000    0.000    0.000 pickle.py:1254(load_stop)
+        1    0.000    0.000    0.000    0.000 queues.py:56(Queue)
+        2    0.000    0.000    0.000    0.000 argparse.py:2156(_get_nargs_pattern)
+       16    0.000    0.000    0.000    0.000 {cmp}
+        1    0.000    0.000    0.000    0.000 connection.py:117(Listener)
+        1    0.000    0.000    0.000    0.000 pickle.py:1022(load_list)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:83(closegroup)
+       31    0.000    0.000    0.000    0.000 {method 'pop' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 {method 'sub' of '_sre.SRE_Pattern' objects}
+        8    0.000    0.000    0.000    0.000 {time.time}
+        3    0.000    0.000    0.000    0.000 {zip}
+        8    0.000    0.000    0.000    0.000 util.py:72(debug)
+        1    0.000    0.000    0.000    0.000 {method 'copy' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 argparse.py:2277(_check_value)
+        2    0.000    0.000    0.000    0.000 argparse.py:287(_join_parts)
+        2    0.000    0.000    0.000    0.000 sre_parse.py:72(opengroup)
+        4    0.000    0.000    0.000    0.000 forking.py:63(register)
+        1    0.000    0.000    0.000    0.000 argparse.py:2112(_get_option_tuples)
+        2    0.000    0.000    0.000    0.000 argparse.py:292(_format_usage)
+        4    0.000    0.000    0.000    0.000 sre_parse.py:137(__delitem__)
+        3    0.000    0.000    0.000    0.000 {method 'remove' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 forking.py:114(Popen)
+        8    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+        5    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}
+        3    0.000    0.000    0.000    0.000 argparse.py:1692(_get_positional_actions)
+        2    0.000    0.000    0.000    0.000 threading.py:59(__init__)
+       40    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 pickle.py:829(__init__)
+        8    0.000    0.000    0.000    0.000 process.py:59(current_process)
+        8    0.000    0.000    0.000    0.000 {sys._getframe}
+        1    0.000    0.000    0.000    0.000 string_escape.py:26(StreamReader)
+        7    0.000    0.000    0.000    0.000 {setattr}
+        1    0.000    0.000    0.000    0.000 connection.py:247(SocketListener)
+        2    0.000    0.000    0.000    0.000 {method 'strip' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 {method 'group' of '_sre.SRE_Match' objects}
+        1    0.000    0.000    0.000    0.000 {vars}
+        1    0.000    0.000    0.000    0.000 Queue.py:231(LifoQueue)
+        8    0.000    0.000    0.000    0.000 process.py:161(name)
+        1    0.000    0.000    0.000    0.000 argparse.py:230(_add_item)
+        1    0.000    0.000    0.000    0.000 synchronize.py:108(Semaphore)
+        1    0.000    0.000    0.000    0.000 Queue.py:212(PriorityQueue)
+       16    0.000    0.000    0.000    0.000 urlparse.py:206(<genexpr>)
+        6    0.000    0.000    0.000    0.000 synchronize.py:84(_make_methods)
+        1    0.000    0.000    0.000    0.000 synchronize.py:195(Condition)
+        1    0.000    0.000    0.000    0.000 queues.py:295(JoinableQueue)
+        1    0.000    0.000    0.000    0.000 Queue.py:21(Queue)
+        1    0.000    0.000    0.000    0.000 connection.py:463(XmlListener)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 string_escape.py:15(IncrementalEncoder)
+        8    0.000    0.000    0.000    0.000 mexecutor.py:226(__init__)
+        8    0.000    0.000    0.000    0.000 sre_parse.py:143(__setitem__)
+        1    0.000    0.000    0.000    0.000 cmd_listzone.py:21(__new__)
+        1    0.000    0.000    0.000    0.000 pickle.py:83(__init__)
+       36    0.000    0.000    0.000    0.000 {method 'reverse' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 connection.py:441(ConnectionWrapper)
+        1    0.000    0.000    0.000    0.000 {method 'groups' of '_sre.SRE_Match' objects}
+        1    0.000    0.000    0.000    0.000 string_escape.py:19(IncrementalDecoder)
+        1    0.000    0.000    0.000    0.000 string_escape.py:10(Codec)
+        2    0.000    0.000    0.000    0.000 argparse.py:1602(identity)
+        3    0.000    0.000    0.000    0.000 sre_compile.py:24(_identityfunction)
+        8    0.000    0.000    0.000    0.000 posixpath.py:51(normcase)
+       17    0.000    0.000    0.000    0.000 {ord}
+        1    0.000    0.000    0.000    0.000 synchronize.py:299(Event)
+        1    0.000    0.000    0.000    0.000 queues.py:348(SimpleQueue)
+        2    0.000    0.000    0.000    0.000 {thread.allocate_lock}
+        1    0.000    0.000    0.000    0.000 string_escape.py:23(StreamWriter)
+        1    0.000    0.000    0.000    0.000 synchronize.py:144(Lock)
+        1    0.000    0.000    0.000    0.000 Queue.py:17(Full)
+        1    0.000    0.000    0.000    0.000 synchronize.py:127(BoundedSemaphore)
+        2    0.000    0.000    0.000    0.000 argparse.py:1160(__init__)
+        2    0.000    0.000    0.000    0.000 {iter}
+        1    0.000    0.000    0.000    0.000 Queue.py:13(Empty)
+        1    0.000    0.000    0.000    0.000 synchronize.py:169(RLock)
+
+

@@ -96,8 +96,7 @@ class Host(str):
     def __new__(cls, *args, **kw):
         return str.__new__(cls,*args,**kw)
     def __repr__(self):
-        return "Host(%s)" % self
-    
+        return "Host(%s)" % self        
 
 
 if "__main__" == __name__:

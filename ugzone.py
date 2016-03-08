@@ -19,12 +19,16 @@ It defines classes_and_methods
 
 import sys
 import os
+import traceback
+import re
+import time
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from libcbr import mexecutor
-from libcbr import mzone
+from libcbr import mexecutor, cmd_zpool_upgrade, cmd_beadm_list, cmd_zone_hostname, cmd_zpool_list, cmd_zone_zlogin
+from libcbr import cmd_zone_list
+
 
 
 __all__ = []
@@ -40,14 +44,14 @@ PROFILE = 0
 DEFAULT_LIST_PREFIX_ZONE="amazone dropzone calzone canzone twilightzone fanzone webz".split()
 DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 
-    
+
 
 # class Host(str):
 #     def __new__(cls, *args, **kw):
 #         return str.__new__(cls,*args,**kw)
 #     def __repr__(self):
 #         return "Host(%s)" % self
-# 
+
 # class Result(object):
 #     def __init__(self, host, cmd, stdout, stderr, status):
 #         if isinstance(host, Host):
@@ -63,7 +67,7 @@ DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 #     @property
 #     def uuid(self):
 #         return self._uuid
-# 
+#
 # class GroupHost(list):
 #     def __init__(self, *lhost):
 #         ltmphost=[]
@@ -93,8 +97,8 @@ DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 #         if prefix:
 #             if prefix not in DEFAULT_LIST_PREFIX_ZONE:
 #                 raise Exception("prefix(%s) should be in %s" % (prefix, repr(DEFAULT_LIST_PREFIX_ZONE)))
-#             
-#         queue=Queue()        
+#
+#         queue=Queue()
 #         lprocess=[]
 #         for host in self:
 #             lprocess.append(Process(target=self._qexec, args=(host, cmd, queue)))
@@ -126,13 +130,13 @@ DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 #         e=[line.rstrip() for line in e.readlines()]
 #         result=Result(host,cmd,o,e,status)
 #         return result
-# 
-# 
+#
+#
 # _cache_lglobalzone=None
 # def get_list_globalzone(refresh=False):
 #     global _cache_lglobalzone
 #     pickle_file=os.path.expanduser("~/.cache/ch.unige.ugzone")
-#     # 
+#     #
 #     lhost=[]
 #     # force it
 #     if refresh:
@@ -158,57 +162,189 @@ DEFAULT_LIST_PREFIX_ZONE=["dropzone"]
 #     _cache_lglobalzone=lhost
 #     return _cache_lglobalzone
 
-    
-def where_are(lzonename):
-    lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(DEFAULT_LIST_PREFIX_ZONE)
-    lresp=lexe.run_parallel(mzone.cmdlistzone)
-    lzone=[]
-    for resp in lresp:
-        lzone+=resp.output
+
+
+def where_are(lzonename, lprefix=DEFAULT_LIST_PREFIX_ZONE):
     lret=[]
-    for zone in lzone:
-        for zonename in lzonename:
-            if zonename==zone.zonename:
-                host=mexecutor.Related.get_result_for_object(zone).host
-                lret.append((host, zonename))
+    for hostname, zonename in get_lmap_hostname_zone(lprefix=lprefix):
+        if zonename.zonename in lzonename:
+            lret.append((hostname, zonename))
     return lret
 
-def list_global_local_host(lprefix=DEFAULT_LIST_PREFIX_ZONE):
+def get_lmap_hostname_zone(lprefix=DEFAULT_LIST_PREFIX_ZONE):
+    lret=[]
     lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefix)
-    lresp=lexe.run_parallel(mzone.cmdlistzone)
-    lzone=[]
-    for resp in lresp:
-        lzone+=resp.output
-    return [(zone, mexecutor.Related.get_result_for_object(zone).host) for zone in lzone if zone.is_local]
+    lmap_exe_cmd_result_related=mexecutor.FactoryFromCmd.create_from_lexe(lexe, cmd_zone_list.CmdListZone())
+    lmap_exe_cmd_result_related.sort(lambda x,y:cmp(x[0].url.hostname,y[0].url.hostname))
+    for exe, unused_cmd, result, unused_related in lmap_exe_cmd_result_related:
+        lzone=result.outputs
+        lzone.sort(cmd_zone_list.Zone.cmp_by_name)
+        lret+=[(exe.url.hostname, zone) for zone in lzone]
+    return lret
 
 
+def execute_shell(cmd, lhostname, lprefixhostname, is_on_all_zones):
+    lret=[]
+    # lhostname
+    lexe_from_lprefix=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefixhostname)
+    # lprefixhostname
+    lexe_from_lhost=[mexecutor.FactoryExecutor.gen_for_hostname(hostname) for hostname in lhostname]
+    lexe=mexecutor.ListExecutor(list(set(lexe_from_lprefix).union(set(lexe_from_lhost))))
+    # lhostname from zone
+    # if is_on_all_zones:
+    #     lzone=[]
+    #     for r in lexe.run(cmd_zone_list.CmdZoneList()):
+    #         if r[2].status != 0:
+    #             continue
+    #         for zone in r[2].outputs:
+    #             lzone.append(zone)
+    #     print lzone
+    #     for zone in lzone:
+    #         print zone.get_hostname
+    #
 
-# 
-#     lg=DEFAULT_LIST_PREFIX_ZONget_list_globalzone()
-#     lg=
-#     for result in lg.parallel_exec("zoneadm list -cp"):
-#         if result.status:
-#             print "cmd(%s) on host(%s) failed" % (result.cmd, result.host)
-#             continue
-#         dzone=Zone.factory_lzone_from_stdout(result.stdout)
-#         if zonename in dzone:
-#             lhost.append(result.host)
-#     return lhost
+    lmap_exe_cmd_result_related=mexecutor.FactoryFromCmd.create_from_lexe(lexe, mexecutor.ShellCmd(cmd))
+    lmap_exe_cmd_result_related.sort(lambda x,y:cmp(x[0].url.hostname,y[0].url.hostname))
+    for exe, unused_cmd, result, related in lmap_exe_cmd_result_related:
+        lret.append(exe.url.hostname+":")
+        if result.stdout:
+            for line in result.stdout:
+                lret.append(" "+line)
+    return lret
+# def check(lprefix=):
+#
+#     lexe_from_lprefix=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefix)
+#
+#     # zfs upgrade
+#     lmap_exe_cmd_result=mexecutor.FactoryFromCmd.create_from_lexe(lexe, cmd_zpool_upgrade.CmdZpoolUpgrade())
 
-def execute_shell(cmd, lhostname, lprefixhostname):
-    lexe=mexecutor.ListExecutor()
-    if None != lprefixhostname:
-        lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefixhostname)
-    for hostname in lhostname:
-        lexe.append(mexecutor.FactoryExecutor.gen_for_hostname(hostname))
-    return lexe.run_parallel(mexecutor.Cmd(cmd))
-
-def check(*args, **kw):
-    # zfs upgrade
+def check_hostname(hostname):
+    class Ret:
+        def __init__(self):
+            self.value=0
+            self.lmsg=[]
+    ret=Ret()
+    exe=mexecutor.FactoryExecutor.gen_for_hostname(hostname)
     # zpool upgrade
-    # beadm one value
+    for poolname_version in exe.run(cmd_zpool_upgrade.CmdZpoolUpgrade()).outputs:
+        ret.value+=1
+        ret.lmsg.append("zpool uprade: CmdZpoolUpgrade hostname(%s) zpoolname(%s), version(%s)" % (hostname, poolname_version.name, poolname_version.version))
+    # zfs upgrade
+    for zfsname_version in exe.run(cmd_zpool_upgrade.CmdZpoolUpgrade()).outputs:
+        ret.value+=2
+        ret.lvalue.append("zfs upgrade: zfs(%s) on version(%s)" % (zfsname_version.poolname, zfsname_version.VERSION))
+    # beadm
+    res=exe.run(cmd_beadm_list.CmdZpoolList())
+    if len(res.outputs) != 1:
+        ret.value+=4
+        ret.lmsg.append("beadm should have only one entry")
+    return ret
+    # explorer
     # no file under a zfs mount
-    pass
+
+def get_lmap_hostingname_zone_hosted(lprefix=DEFAULT_LIST_PREFIX_ZONE):
+    lret=[]
+    #
+    # get the list of zones
+    lexe=mexecutor.FactoryExecutor.gen_list_from_lprefixhost(lprefix)
+    lmap_exe_cmd_result=mexecutor.FactoryFromCmd.create_from_lexe(lexe, cmd_zone_list.CmdListZone())
+    lmap_exe_cmd_result.sort(lambda x,y:cmp(x[0].url.hostname,y[0].url.hostname))
+    #
+    # for each zone, ask the hostname
+    lmap_exe_cmd_related=[]
+    for exe, unused_cmd, result, related in lmap_exe_cmd_result:
+        for zone in result.outputs:
+            if zone.zonename == "global":
+                continue
+            fun_get_hostname=cmd_zone_hostname.CmdZoneHostname(zone.zonename)
+            lmap_exe_cmd_related.append((exe, fun_get_hostname, zone))
+    lmap_exe_cmd_result_related=mexecutor.FactoryFromCmd.create(lmap_exe_cmd_related)
+    for exe, unused_cmd, result, related in lmap_exe_cmd_result_related:
+        lret.append((exe.hostname, related, result.outputs))
+    return lret
+
+def move_zonename_to_hostingname(zonename, hostingname):
+    print "we are going to move zone(%s) to host(%s)" %(zonename,hostingname)
+    #
+    lmap_hostname_zone=get_lmap_hostname_zone()
+    cur_hostname=None
+    for hostname, zone in lmap_hostname_zone:
+        if zone.zonename==zonename:
+            cur_hostname=hostname
+            break
+    #
+    if not cur_hostname:
+        print "unable to find zone(%s)"
+        sys.exit(1)
+    #
+    # check
+    print "  - check that zone(%s) is elligible for a move:" % zonename
+    hostedname=zone.get_hostname()
+    result=check_hostname(hostedname)
+    if result.value:
+        print "    - zone (%s) did not successfully succeed the check" % zone.zonename
+        for line in result.lmsg:
+            print "      -  %s" % line
+    else:
+        print "    - done"
+    #
+    # move zone
+    exe_source=mexecutor.Relation.get_exe(zone)
+    res=exe_source.run("df %s" % zone.zonepath)
+    zpoolname=re.search("^(\S+)/", res.stdout[1]).groups()[0]
+    cmd_export_str="/usr/local/bin/exportzone %s" % zpoolname
+    print "  - command *export zone* on host (%s) is: %s" % (exe_source.hostname, cmd_export_str)
+    res=exe_source.run(cmd_export_str)
+    if res.status:
+        print "     error in the exportzone, cmd(%s)" % cmd_export_str
+        for line in res.stdout:
+            print "      %s" % line
+        sys.exit(0)
+    print "    - zpool(%s) exported" % zpoolname
+    #check exported
+    cmd_import_str="/usr/local/bin/importzone %s" % zpoolname
+    exe_target=mexecutor.FactoryExecutor.gen_for_hostname(hostingname)
+    print "  - command *import zone* on host(%s) is: %s" % (hostingname, cmd_import_str)
+    res=exe_target.run(cmd_import_str)
+    if res.status:
+        print "     error in the importzone, cmd(%s)" % cmd_import_str
+        for line in res.stdout:
+            print "   %s" % line
+        sys.exit(0)
+    print "    - zpool(%s) successfully imported on host(%s)" % (zpoolname, hostingname)
+    # wait until the zone is up
+    print "  - wait that the zone is up"
+    print "    - wait that it is running"
+    i=0
+    max_seconds=30
+    while i<max_seconds:
+        zone=filter(lambda x:zonename==x.zonename,exe_target.run(cmd_zone_list.CmdListZone()).outputs)[0]
+        if zone.state=="running":
+            print "     - zone is running"
+            break
+        i+=1
+        time.sleep(1)
+    zone=filter(lambda x:zonename==x.zonename,exe_target.run(cmd_zone_list.CmdListZone()).outputs)[0]
+    print "    - wait that it is running"
+    i=0
+    max_seconds=30
+    while i<max_seconds:
+        if zone.state=="running":
+            print "     - zone is running"
+            break
+        i+=1
+        time.sleep(1)
+    print "   - connect with zlogin"
+    i=0
+    max_seconds=5
+    while i<max_seconds:
+        resp=zone.zlogin("ls -l")
+        if 0 == resp.status:
+            print "     - success"
+            break
+        print ".",
+        time.sleep(1)
+
 
 
 
@@ -256,56 +392,79 @@ USAGE
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-           
+
         subparsers = parser.add_subparsers(dest="sub", help='sub-command help')
-    
+
         # whereis zonename
         parser_whereis = subparsers.add_parser('where-are', help='on which globalzone is a zone')
         parser_whereis.add_argument("zonenames", type=str, help="which zonenames to search (eg: zone1,zone2)")
         parser_whereis.set_defaults(func=where_are)
         # list global local zone
-        parser_whereis = subparsers.add_parser('list-global-local-host', help='list global zonename zonename-host')
-        parser_whereis.add_argument("prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
-        parser_whereis.set_defaults(func=list_global_local_host)
+        parser_list_zonename = subparsers.add_parser('list-zonename', help='list global zonename zonename-host')
+        parser_list_zonename.add_argument("prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_list_zonename.set_defaults(func=get_lmap_hostname_zone)
         # execute
-        parser_whereis = subparsers.add_parser('execute-shell', help='execute a shell command')
-        parser_whereis.add_argument("--prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
-        parser_whereis.add_argument("--hosts", type=str, help="on which hosts (eg:zone1,zone2)")
-        parser_whereis.add_argument("cmd", type=str, help="commande to invoke (eg: 'ls -l')")        
-        parser_whereis.set_defaults(func=execute_shell)
+        parser_shell_this = subparsers.add_parser('execute-shell', help='execute a shell command')
+        parser_shell_this.add_argument("--all-zones", action='store_true', help="do also on all zones" )
+        parser_shell_this.add_argument("--prefixes", type=str, help="on which prefixes (eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_shell_this.add_argument("--hosts", type=str, help="on which hosts (eg:zone1,zone2)")
+        parser_shell_this.add_argument("cmd", type=str, help="commande to invoke (eg: 'ls -l')")
+        parser_shell_this.set_defaults(func=execute_shell)
         # checks zonename
-        parser_whereis = subparsers.add_parser('check', help='do some checks on the zone')
-        parser_whereis.add_argument("--zonenames", type=str, help="on wich zonename(eg: zone1,zone2)")
-        parser_whereis.add_argument("--prefixes", type=str, help="on which prefixes(eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
-        parser_whereis.set_defaults(func=check)
+        parser_check_zonename = subparsers.add_parser('check-zonename', help='do some checks on the zone')
+        parser_check_zonename.add_argument("--zonenames", type=str, help="on wich zonename(eg: zone1,zone2)")
+        parser_check_zonename.add_argument("--prefixes", type=str, help="on which prefixes(eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_check_zonename.set_defaults(func=check_hostname)
+        # get hostname
+        parser_list_hostname = subparsers.add_parser('list-hosting-zonename-hosted', help='')
+        parser_list_hostname.add_argument("--prefixes", type=str, help="on which prefixes(eg:webzone,sapzone for webzone1,2,5 and sapzone1)")
+        parser_list_hostname.set_defaults(func=get_lmap_hostingname_zone_hosted)
         # ugzone moves --// zone,zone,zone globalzone zone globalzone zone,zone,zone globalzone
-    
+        parser_move_zone = subparsers.add_parser('move-zone', help='')
+        parser_move_zone.add_argument("zonename", type=str, help="zonename (e.g. portail1…)")
+        parser_move_zone.add_argument("hostingname", type=str, help="a globalzone where the zone should lands (e.g. dropzone1…)")
+        parser_move_zone.set_defaults(func=move_zonename_to_hostingname)
+
         # Process arguments
         args = parser.parse_args()
         if "where-are" == args.sub:
-            lmaphostzonename=args.func(args.zonenames.split(","))
-            for host, zonename in lmaphostzonename:
-                print (host, zonename)
-        elif "list-global-local-host" == args.sub:
-            lmapzone_host=args.func(args.prefixes.split(","))
-            for zone, host in lmapzone_host:
-                print (host, zone.zonename)
+            lmaphostzone=args.func(args.zonenames.split(","))
+            for hostname, zone in lmaphostzone:
+                print zone.zonename+" on "+hostname
+        elif "list-zonename" == args.sub:
+            lmap_hostname_zone=args.func(args.prefixes.split(","))
+            for hostname, zone in lmap_hostname_zone:
+                print hostname, ":", zone.zonename
         elif "execute-shell"  == args.sub:
             lhostname= [] if None==args.hosts else args.hosts.split(",")
             lprefixhostname= [] if None==args.prefixes else args.prefixes.split(",")
-            lresp=args.func(args.cmd, lhostname=lhostname, lprefixhostname=lprefixhostname)
-            for resp in lresp:
-                print (resp.host)
-                print (os.linesep.join(resp.stdout))
-        elif "check" == args.sub:
-            args.func(args.zonenames.split(","))
+            lresp=args.func(args.cmd, lhostname=lhostname, lprefixhostname=lprefixhostname, is_on_all_zones=args.all_zones)
+            print "\n".join(lresp)
+        elif "check-zonename" == args.sub:
+            for zonename in args.zonenames.split(","):
+                args.func(zonename)
+        elif "list-hosting-zonename-hosted" == args.sub:
+            lprefixhostname= [] if None==args.prefixes else args.prefixes.split(",")
+            lresp=args.func(lprefix=lprefixhostname)
+            for hostingname, zone, hosted in lresp:
+                print hostingname, zone.zonename, hosted
+        elif "move-zone" == args.sub:
+            args.func(args.zonename, args.hostingname)
+
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
     except Exception as e:
         if DEBUG or TESTRUN:
             raise(e)
-        
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        tb_format_exception=traceback.format_exception(exc_type, exc_value
+                                                       ,exc_traceback)
+        for line in tb_format_exception:
+            print line
+
+
+
         indent = len(program_name) * " "
         sys.stderr.write(program_name + ": " + repr(e) + "\n")
         sys.stderr.write(indent + "  for help use --help")

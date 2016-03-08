@@ -7,36 +7,40 @@ Created on 9 janv. 2015
 import logging
 
 # libcbr
-import cmd_listzone
 import mexecutor
 
 
 my_logger=logging.getLogger('MyLogger')
 
-_LEN_OF_ZONE_LIST_ENTRY=10
-class CmdZonecfgExport(mexecutor.CmdWithFactory):
-    with_construct=True
-    def factory(self,resp):
+class CmdZoneconfigExport(mexecutor.ObjectWrapped):
+    def __new__(cls, zonename):
+        return str.__new__("zonecfg -z %s export" % zonename)
+    def _factory(self,shell_result):
         '''call by Factor'''
-        if resp.status != 0:
+        if shell_result.status != 0:
             my_logger.error('the cmd (%s) did not succeed' % self)
             return []
-        return zoneCaca(resp.stdout)
-
-class Container(object): pass
-container=Container()
-container.method_name="config_export"
-container.class_cmd=CmdZonecfgExport
-container.cmd_template_str="zonecfg -z %(zonename) export"
-container.lattr=["zonename"]
-cmd_listzone.Zone.add_cmd(container)
+        return zoneCaca(shell_result.stdout)
 
 
 
 
 class zoneCaca(object):
-    def __init__(self, output):
+    def __init__(self, output, zone):
         self.output=output
+        self.zone=zone
+    def __repr__(self):
+        return str("%s(%s)" % (self.__class__, self.zone.zonename))
+
+
+
+
+
+# CmdZonecfgExport("zonecfg -z %(zonename) export")
+
+
+
+
 # 
 # def read_zone_config(output):
 #     

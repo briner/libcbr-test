@@ -69,17 +69,19 @@ my_logger=logging.getLogger('MyLogger')
 #     _zonename=lout[0].rstrip()
 #     return _zonename
 
+
+
             
 _LEN_OF_ZONE_LIST_ENTRY=10
 class CmdListZone(mexecutor.CmdWithFactory):
     with_construct=True
-    def factory(self,resp):
+    def factory(self,shell_result):
         '''call by Factor'''
-        if resp.status != 0:
+        if shell_result.status != 0:
             my_logger.error('the cmd (%s) did not succeed' % self)
             return []
         lzone=[]
-        for line in resp.stdout:
+        for line in shell_result.stdout:
             zone=self.from_zoneadm_list_entry(line)
             lzone.append(zone)
         return lzone

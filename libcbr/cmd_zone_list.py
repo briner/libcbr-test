@@ -14,32 +14,37 @@ import mexecutor
 import mix
 
 my_logger=logging.getLogger('MyLogger')
+ZONECFG_EXPORT_CMD="zonecfg -z %s export"
 
 
 _LEN_OF_ZONE_LIST_ENTRY=10
-class CmdListZone(mexecutor.CmdWithFactory):
+class CmdZoneList(mexecutor.ShellCmdWrapped):
+    def __new__(self):
+        return str.__new__(self, "zoneadm list -cp")
+    def __init__(self):
+        super(CmdZoneList, self).__init__("zoneadm list -cp")
     with_construct=True
-    def factory(self,resp):
+    def _factory(self,shell_result):
         '''call by Factor'''
-        if resp.status != 0:
+        if shell_result.status != 0:
             my_logger.error('the cmd (%s) did not succeed' % self)
             return []
         lzone=[]
-        for line in resp.stdout:
+        for line in shell_result.stdout:
             zone=self.from_zoneadm_list_entry(line)
             lzone.append(zone)
         return lzone
+
     @staticmethod
     def from_zoneadm_list_entry(output_line):
         ''' output_line: "1:grouper3:running:/zones/grouper3_pool/grouper3:40cc68e3-f061-e385-cac9-ec6aefc6ae3a:solaris:excl:-:none:'''
         zone_list_entry=output_line.split(":")
         zone_list_entry=zone_list_entry+(_LEN_OF_ZONE_LIST_ENTRY-len(zone_list_entry))*['']
         return Zone(*zone_list_entry)
-cmd_list_zone=CmdListZone("zoneadm list -cp")
 
 
 
-class Zone(object):
+class Zone(mexecutor.ObjectWrapped):
     lcmd={}
     def __init__(self,  zoneid, zonename, state, zonepath, uuid, brand, ip_type, r_or_w, file_mac_profile, unused_field):
         self.zoneid=zoneid
@@ -52,11 +57,18 @@ class Zone(object):
         self.r_or_w=r_or_w
         self.file_mac_profile=file_mac_profile
         self.unused_field=unused_field
-        self.is_local=self.zonename != 'global' 
+        self.is_local=self.zonename != 'global'
         self._lrecipient=None   # this is a lazy list
         self._lfs_info=None # this is a lazy list
 #        self._dsm_sys=None
         self._lfs=None
+    @classmethod
+    def add_method(cls, name, wrapped_fun):
+        fun=wrapped_fun()
+#         print "name", name
+#         print "wrapped_fun", "type", type(wrapped_fun), "self", wrapped_fun, "dir",dir(wrapped_fun)
+#         print "fun", "type", type(fun), "self", fun, "dir",dir(fun)
+        setattr(cls, name, fun)
     def to_list(self):
         return [self.zoneid \
         ,self.zonename \
@@ -67,18 +79,15 @@ class Zone(object):
         ,self.ip_type
         ,self.r_or_w
         ,self.file_mac_profile]
-    @classmethod
-    def add_cmd(cls, container):
-        # construct the cmd line
-        def newfunction(): 
-        setattr(cls, container.method_name,)
-        self.lcmd.append(container)
     def _get_rootpath(self):
         if self.zonename=='global':
             return self.zonepath
         else:
             return os.path.join(self.zonepath, 'root')
     rootpath=property(_get_rootpath)
+#     @classmethod
+#     def add_cmd(cls, method_name, fun):
+#         setattr(cls, method_name, fun())
     def _get_uniq_value(self):
         """to comply with UniqList """
         return self.zonename
@@ -98,7 +107,7 @@ class Zone(object):
             return self._lrecipient
         if [] == self._lrecipient:
             return []
-        fn_etc_alias=os.path.join(self.zonepath, 'root/etc/aliases') # 
+        fn_etc_alias=os.path.join(self.zonepath, 'root/etc/aliases') #
         if not os.path.isfile(fn_etc_alias):
             self._lrecipient=[]
             return self._lrecipient
@@ -126,11 +135,11 @@ class Zone(object):
     def read_zone_config(self):
         cmd=ZONECFG_EXPORT_CMD % self.zonename
         proc=subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, cwd='/')
-        lout=proc.stdout.readlines()  
+        lout=proc.stdout.readlines()
         retcode=proc.wait()
-        if retcode != 0 : 
+        if retcode != 0 :
             my_logger.error('the cmd (%s) did not succeed' % cmd)
-        lout=[out.rstrip() for out in lout]    
+        lout=[out.rstrip() for out in lout]
         lout_iter=iter(lout)
         self._lfs=[]
         for out in lout_iter:
@@ -150,43 +159,43 @@ class Zone(object):
                         dparameter['fs_special']=value1
                     if key1 == 'type':
                         dparameter['fs_type']=value1
-    def zlogin(self,  cmd):
-        cmd=ZLOGIN_CMD % (self.zonename,  cmd)
-        my_logger.debug('enter in "Zone.zlogin"')
-        if not self.is_running:
-            msg='zone(%s) not in "running" state, can not execute the zlogin cmd (%s)' % (self.zonename,cmd)
-            my_logger.warning(msg)
-            return
-        proc=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd='/')
-        read_set=[proc.stdout, proc.stderr]
-        lline_hook=[]
-        send_email=False
-        while read_set:
-            rlist,unused_wlist,unused_xlist=select.select(read_set, [], [])
-            if proc.stdout in rlist:
-                stdout=proc.stdout.readline()
-                if stdout == '':
-                    read_set.remove(proc.stdout)
-                else:
-                    stdout=stdout.rstrip()
-                    msg='hook (out): %s' % stdout
-                    lline_hook.append(msg)
-                    my_logger.debug(msg)
-            if proc.stderr in rlist:
-                stderr=proc.stderr.readline()
-                if stderr == '':
-                    read_set.remove(proc.stderr)
-                else:
-                    send_email=True
-                    stderr=stderr.rstrip()
-                    msg='hook (err): %s' % stderr
-                    my_logger.error(msg)
-                    lline_hook.append(log.getLogStr())
-        if send_email:
-            lbody_email=['zone(%s)' % self.zonename
-                        ,' - hook cmd (%s)' % cmd
-                        ]+ [' - %s' % line for line in lline_hook]
-#lost             notification.notify.add(lbody_email, lrecipient=self.lrecipient)
+#     def zlogin(self,  cmd):
+#         cmd=ZLOGIN_CMD % (self.zonename,  cmd)
+#         my_logger.debug('enter in "Zone.zlogin"')
+#         if not self.is_running:
+#             msg='zone(%s) not in "running" state, can not execute the zlogin cmd (%s)' % (self.zonename,cmd)
+#             my_logger.warning(msg)
+#             return
+#         proc=subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd='/')
+#         read_set=[proc.stdout, proc.stderr]
+#         lline_hook=[]
+#         send_email=False
+#         while read_set:
+#             rlist,unused_wlist,unused_xlist=select.select(read_set, [], [])
+#             if proc.stdout in rlist:
+#                 stdout=proc.stdout.readline()
+#                 if stdout == '':
+#                     read_set.remove(proc.stdout)
+#                 else:
+#                     stdout=stdout.rstrip()
+#                     msg='hook (out): %s' % stdout
+#                     lline_hook.append(msg)
+#                     my_logger.debug(msg)
+#             if proc.stderr in rlist:
+#                 stderr=proc.stderr.readline()
+#                 if stderr == '':
+#                     read_set.remove(proc.stderr)
+#                 else:
+#                     send_email=True
+#                     stderr=stderr.rstrip()
+#                     msg='hook (err): %s' % stderr
+#                     my_logger.error(msg)
+#                     lline_hook.append(log.getLogStr())
+#         if send_email:
+#             lbody_email=['zone(%s)' % self.zonename
+#                         ,' - hook cmd (%s)' % cmd
+#                         ]+ [' - %s' % line for line in lline_hook]
+# #lost             notification.notify.add(lbody_email, lrecipient=self.lrecipient)
     def launch_hook_before_snapshot(self):
         my_logger.debug('enter in launch_hook_before_snapshot within the zone(%s)'%self.zonename)
         if not self.is_running:
